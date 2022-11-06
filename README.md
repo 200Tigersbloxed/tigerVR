@@ -3,6 +3,8 @@ A VR Library for Roblox
 
 ![preview gif lol](https://user-images.githubusercontent.com/45884377/200158531-582a1d6c-089f-44cf-8c3b-5dc16c5b14b2.gif)
 
+## [Try the Experience out here!](https://www.roblox.com/games/11479356219/tigerVR)
+
 ## How to use in your game
 
 Import the Script from [here](https://www.roblox.com/library/11480543122/tigerVR)

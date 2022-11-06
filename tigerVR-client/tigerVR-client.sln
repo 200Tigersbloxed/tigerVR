@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tigerVR-client", "tigerVR-client\tigerVR-client.csproj", "{B6E83F3B-31A9-41CB-ABAF-4432B6EF0205}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tigerVR-client.lib", "tigerVR-client.lib\tigerVR-client.lib.csproj", "{67F3E2D8-9F6D-4D36-864F-8073C9BCF4BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6E83F3B-31A9-41CB-ABAF-4432B6EF0205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6E83F3B-31A9-41CB-ABAF-4432B6EF0205}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6E83F3B-31A9-41CB-ABAF-4432B6EF0205}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6E83F3B-31A9-41CB-ABAF-4432B6EF0205}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F3E2D8-9F6D-4D36-864F-8073C9BCF4BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F3E2D8-9F6D-4D36-864F-8073C9BCF4BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F3E2D8-9F6D-4D36-864F-8073C9BCF4BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F3E2D8-9F6D-4D36-864F-8073C9BCF4BA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

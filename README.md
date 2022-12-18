@@ -34,8 +34,6 @@ require(11480475962):create()
 
 4) Run tigerVR-client.exe and follow the on-screen instructions
 
-### Why is my FBT laggy?
+### 18/12/2022 Update
 
-This is a limitation by Roblox, as they do not allow WebSocket usage for "security" reasons [🙄](https://gist.github.com/200Tigersbloxed/5167a96893c47b2553feda552a96c536)
-
-Please see [Line 15 in the NetworkingInterface](https://github.com/200Tigersbloxed/tigerVR/blob/main/tigerVR/Net/NetworkInterface.lua#L15) for more information.
+I have taken down the main server for now, however, you can still use the [client script](https://gist.github.com/200Tigersbloxed/5167a96893c47b2553feda552a96c536) if you'd still like to use this.

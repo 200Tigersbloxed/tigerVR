@@ -16,8 +16,13 @@ public class main
         ConfigManager.CreateConfig();
         EasyOpenVRSingleton.Instance.Init();
         SocketServer.Start();
-        Socket.Connect();
-        Setup();
+        if (!ConfigManager.LoadedConfig.OfflineMode)
+        {
+            Socket.Connect();
+            Setup();
+        }
+        else
+            Setup2(true);
     }
 
     private static void Setup(bool didRunAgain = false)

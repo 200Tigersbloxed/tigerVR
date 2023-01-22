@@ -8,6 +8,7 @@ local CacheLocations = require(tigerVR.InstanceCache.CacheLocations)
 local AvatarTools = require(tigerVR.Avatar.AvatarTools)
 local AvatarInstance = require(tigerVR.Avatar.AvatarInstance)
 local ExtendedAvatar = require(tigerVR.Avatar.ExtendedAvatar)
+local AvatarIK = require(tigerVR.Avatar.AvatarIK)
 local Config = require(tigerVR.User.Config)
 local VR = require(tigerVR.User.VR)
 local NetworkInterface = require(tigerVR.Net.NetworkInterface)
@@ -176,6 +177,8 @@ local function initremotes()
 			tigerVR.Remotes.FBT.Finish.OnServerEvent:Connect(function(player)
 				local playercache = Config:GetOrCreatePlayerCache(player)
 				playercache.CalibrationState.Value = 2
+				local dummy = AvatarTools:GetDummyAvatar(player)
+				AvatarIK:ApplyIKToModel(dummy)
 			end)
 			
 			Players.PlayerAdded:Connect(function(player)
@@ -244,7 +247,6 @@ local function initremotes()
 					local folder
 					if rig == Enum.HumanoidRigType.R6 then
 						folder = pc['OriginalCFrames']['R6']
-						-- fill in values
 					elseif rig == Enum.HumanoidRigType.R15 then
 						folder = pc['OriginalCFrames']['R15']
 					else
@@ -259,8 +261,6 @@ local function initremotes()
 							end
 						end
 					end
-					local humanoid = Instance.new('Humanoid')
-					
 				else
 					-- Destroyed
 					local folder = pc["ExtendedTracking"]['Trackers']
@@ -307,12 +307,33 @@ local function initremotes()
 				end
 				-- Only Align if we have an Avatar to Align, and we're not Calibrating FBT
 				if AvatarTools:DoesPlayerHaveADummyAvatar(Players.LocalPlayer) then
+					local rig = AvatarTools:GetPlayerRigType(Players.LocalPlayer)
 					local vrcf = VR:GetVRCFrames()
 					AvatarInstance:AlignVRAvatarByVRAvatarPart(Players.LocalPlayer, AvatarInstance.VRAvatarParts.Head, vrcf['Head'])
-					AvatarInstance:AlignVRAvatarByVRAvatarPart(Players.LocalPlayer, AvatarInstance.VRAvatarParts.LeftHand, vrcf['LeftHand'])
-					AvatarInstance:AlignVRAvatarByVRAvatarPart(Players.LocalPlayer, AvatarInstance.VRAvatarParts.RightHand, vrcf['RightHand'])
-					local cframes = AvatarInstance:GetAllCFrames()
+					if rig == Enum.HumanoidRigType.R6 then
+						AvatarInstance:AlignVRAvatarByVRAvatarPart(Players.LocalPlayer, AvatarInstance.VRAvatarParts.LeftHand, vrcf['LeftHand'])
+						AvatarInstance:AlignVRAvatarByVRAvatarPart(Players.LocalPlayer, AvatarInstance.VRAvatarParts.RightHand, vrcf['RightHand'])
+					end
+					AvatarInstance:AlignVRAvatarByPartName(Players.LocalPlayer, "vr_lefthand", vrcf['LeftHand'])
+					AvatarInstance:AlignVRAvatarByPartName(Players.LocalPlayer, "vr_righthand", vrcf['RightHand'])
 					local trackerCount = #pc.ExtendedTracking.Trackers:GetChildren()
+					if pc.CalibrationState.Value == 1 then
+						local dummy = AvatarInstance:GetVRAvatar(Players.LocalPlayer)
+						local leftFoot
+						local rightFoot
+						if rig == Enum.HumanoidRigType.R6 then
+							leftFoot = dummy:WaitForChild("Left Leg")
+							rightFoot = dummy:WaitForChild("Right Leg")
+						elseif rig == Enum.HumanoidRigType.R15 then
+							leftFoot = dummy:WaitForChild("LeftFoot")
+							rightFoot = dummy:WaitForChild("RightFoot")
+						end
+						local vr_leftfoot = dummy:WaitForChild("vr_leftfoot")
+						local vr_rightfoot = dummy:WaitForChild("vr_rightfoot")
+						vr_leftfoot:PivotTo(leftFoot.CFrame)
+						vr_rightfoot:PivotTo(rightFoot.CFrame)
+					end
+					local cframes = AvatarInstance:GetAllCFrames()
 					tigerVR.Remotes.OnPlayerFrame:FireServer(getconfig(), cframes, trackerCount)
 					-- Facial Tracking is a WIP
 					--local weights = pc.ExtendedTracking.FaceWeights:GetChildren()
@@ -356,7 +377,7 @@ local function initremotes()
 	end
 end
 
-function module:run(config)
+function module:run()
 	initremotes()
 	if RunService:IsServer() then
 		-- Disable Collision with Dummy Models

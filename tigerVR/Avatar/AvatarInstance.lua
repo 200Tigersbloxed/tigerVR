@@ -5,6 +5,7 @@ local Players = game:GetService('Players')
 
 local tigerVR = ReplicatedStorage:WaitForChild('tigerVR')
 local AvatarTools = require(tigerVR.Avatar.AvatarTools)
+local AvatarIK = require(tigerVR.Avatar.AvatarIK)
 local CacheLocations = require(tigerVR.InstanceCache.CacheLocations)
 local Config = require(tigerVR.User.Config)
 
@@ -15,8 +16,6 @@ module.VRAvatarParts = {
 	["LeftHand"] = 1,
 	["RightHand"] = 2
 }
-
-module.IK = nil
 
 --[[
 	This was going to be used to weld the Character to the dummy, however this restricts Character movement,
@@ -112,14 +111,16 @@ local function CreateWeld(part0, part1)
 	part0.Anchored = false
 end
 
-function module:CreateVRAvatar(player, ignoreWelds)
+function module:CreateVRAvatar(player, ignoreWelds, applyIK)
 	local character = WorkSpace:WaitForChild(player.Name)
 	local newdummy = nil
 	local rigtype = AvatarTools:GetPlayerRigType(player)
 	if rigtype == Enum.HumanoidRigType.R6 then
 		newdummy = tigerVR.InstanceCache.R6Dummy:Clone()
+		applyIK = false
 	elseif rigtype == Enum.HumanoidRigType.R15 then
 		newdummy = tigerVR.InstanceCache.R15Dummy:Clone()
+		if applyIK == nil then applyIK = true end
 	else
 		warn(player.Name.." does not have a valid HumanoidRigType! ("..tostring(rigtype)..") Cannot continue.")
 		return false
@@ -146,51 +147,57 @@ function module:CreateVRAvatar(player, ignoreWelds)
 	for _, part in newdummy:GetChildren() do
 		if part:IsA('BasePart') or part:IsA('MeshPart') then
 			--part.Transparency = 1
-			part.Anchored = true
+			if not AvatarIK:IsIKJoint(part.Name) then
+				part.Anchored = true
+			end
 		end
 	end
 	if not ignoreWelds then
 		--module:WeldModel(character, newdummy)
-		if module.IK == nil and rigtype == Enum.HumanoidRigType.R15 then
+		if rigtype == Enum.HumanoidRigType.R15 then
 			-- Weld Upper and Lowers
-			-- + Left
-			-- ++ LeftUpperArm -> LeftLowerArm
-			local lupperarm = newdummy:WaitForChild('LeftUpperArm')
-			local llowerarm = newdummy:WaitForChild('LeftLowerArm')
-			CreateWeld(lupperarm, llowerarm)
-			-- ++ LeftLowerArm -> LeftHand
-			local lhand = newdummy:WaitForChild('LeftHand')
-			CreateWeld(llowerarm, lhand)
-			-- ++ LeftUpperLeg -> LeftLowerLeg
-			local lupperleg = newdummy:WaitForChild('LeftUpperLeg')
-			local llowerleg = newdummy:WaitForChild('LeftLowerLeg')
-			CreateWeld(lupperleg, llowerleg)
-			-- ++ LeftLowerLeg -> LeftFoot
-			local lfoot = newdummy:WaitForChild('LeftFoot')
-			CreateWeld(llowerleg, lfoot)
-			-- + Right
-			-- ++ RightUpperArm -> RightLowerArm
-			local rupperarm = newdummy:WaitForChild('RightUpperArm')
-			local rlowerarm = newdummy:WaitForChild('RightLowerArm')
-			CreateWeld(rupperarm, rlowerarm)
-			-- ++ RightLowerArm -> RightHand
-			local rhand = newdummy:WaitForChild('RightHand')
-			CreateWeld(rlowerarm, rhand)
-			-- ++ RightUpperLeg -> RightLowerLeg
-			local rupperleg = newdummy:WaitForChild('RightUpperLeg')
-			local rlowerleg = newdummy:WaitForChild('RightLowerLeg')
-			CreateWeld(rupperleg, rlowerleg)
-			-- ++ RightLowerLeg -> RightFoot
-			local rfoot = newdummy:WaitForChild('RightFoot')
-			CreateWeld(rlowerleg, rfoot)
+			if not applyIK then
+				-- + Left
+				-- ++ LeftUpperArm -> LeftLowerArm
+				local lupperarm = newdummy:WaitForChild('LeftUpperArm')
+				local llowerarm = newdummy:WaitForChild('LeftLowerArm')
+				CreateWeld(lupperarm, llowerarm)
+				-- ++ LeftLowerArm -> LeftHand
+				local lhand = newdummy:WaitForChild('LeftHand')
+				CreateWeld(llowerarm, lhand)
+				-- ++ LeftUpperLeg -> LeftLowerLeg
+				local lupperleg = newdummy:WaitForChild('LeftUpperLeg')
+				local llowerleg = newdummy:WaitForChild('LeftLowerLeg')
+				CreateWeld(lupperleg, llowerleg)
+				-- ++ LeftLowerLeg -> LeftFoot
+				local lfoot = newdummy:WaitForChild('LeftFoot')
+				CreateWeld(llowerleg, lfoot)
+				-- + Right
+				-- ++ RightUpperArm -> RightLowerArm
+				local rupperarm = newdummy:WaitForChild('RightUpperArm')
+				local rlowerarm = newdummy:WaitForChild('RightLowerArm')
+				CreateWeld(rupperarm, rlowerarm)
+				-- ++ RightLowerArm -> RightHand
+				local rhand = newdummy:WaitForChild('RightHand')
+				CreateWeld(rlowerarm, rhand)
+				-- ++ RightUpperLeg -> RightLowerLeg
+				local rupperleg = newdummy:WaitForChild('RightUpperLeg')
+				local rlowerleg = newdummy:WaitForChild('RightLowerLeg')
+				CreateWeld(rupperleg, rlowerleg)
+				-- ++ RightLowerLeg -> RightFoot
+				local rfoot = newdummy:WaitForChild('RightFoot')
+				CreateWeld(rlowerleg, rfoot)
+			end
 			-- + Torso
 			-- ++ LowerTorso -> UpperTorso
 			local ltorso = newdummy:WaitForChild('LowerTorso')
 			local utorso = newdummy:WaitForChild('UpperTorso')
 			CreateWeld(ltorso, utorso)
+			newdummy:WaitForChild("HumanoidRootPart").Anchored = false
 		end
 	end
 	duplicateclothes(character, newdummy, pc)
+	if applyIK and pc.CalibrationState.Value ~= 1 then AvatarIK:ApplyIKToModel(newdummy) end
 	tigerVR.Remotes.OnVRDummy:FireClient(player, newdummy)
 	return newdummy
 end
@@ -247,12 +254,14 @@ function module:AlignVRAvatarByVRAvatarPart(player, vravatarpart, cframe, isLoca
 		elseif rigtype == Enum.HumanoidRigType.R15 then
 			model:FindFirstChild('LeftHand'):PivotTo(cframe)
 		end
+		model:FindFirstChild('vr_lefthand'):PivotTo(cframe)
 	elseif vravatarpart == module.VRAvatarParts.RightHand then
 		if rigtype == Enum.HumanoidRigType.R6 then
 			model:FindFirstChild('Right Arm'):PivotTo(cframe)
 		elseif rigtype == Enum.HumanoidRigType.R15 then
 			model:FindFirstChild('RightHand'):PivotTo(cframe)
 		end
+		model:FindFirstChild('vr_righthand'):PivotTo(cframe)
 	end
 end
 
@@ -300,6 +309,7 @@ function module:ReplicateCFrames(player, cframes)
 		pcall(function()
 			local part = dummy:FindFirstChild(name)
 			if part then
+				if AvatarIK:IsIKJoint(part.Name) then return end
 				part:PivotTo(cframe)
 			end
 		end)
@@ -412,6 +422,7 @@ local function shouldpartbevisible(partname, trackercount)
 		if partname == "Left Leg" or partname == "LeftFoot" or partname == "LeftUpperLeg" or partname == "LeftLowerLeg" then return true end
 		if partname == "Right Leg" or partname == "RightFoot" or partname == "RightUpperLeg" or partname == "RightLowerLeg" then return true end
 	end
+	--if partname == "vr_lefthand" or partname == "vr_righthand" or partname == "vr_leftfoot" or partname == "vr_rightfoot" then return true end
 end
 
 -- TODO: Only hide things we need to

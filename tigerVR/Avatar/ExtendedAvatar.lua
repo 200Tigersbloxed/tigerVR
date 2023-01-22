@@ -12,6 +12,12 @@ local AnimationTool = require(tigerVR.Animation.AnimationTool)
 
 local module = {}
 
+module.TrackerBodyPart = {
+	Torso = 0,
+	LeftFoot = 1,
+	RightFoot = 2
+}
+
 local function failfbt(player)
 	if AvatarTools:DoesPlayerHaveADummyAvatar(player) then
 		AvatarInstance:DestroyVRAvatar(player)
@@ -66,9 +72,9 @@ local function getlmcp(lm)
 	local humanoid = lm:FindFirstChild('Humanoid')
 	if humanoid then
 		if humanoid.RigType == Enum.HumanoidRigType.R6 then
-			return lm:FindFirstChild('Torso'), lm:FindFirstChild('Left Leg'), lm:FindFirstChild('Right Leg')
+			return lm:FindFirstChild('Torso'), lm:FindFirstChild('vr_leftfoot'), lm:FindFirstChild('vr_rightfoot')
 		elseif humanoid.RigType == Enum.HumanoidRigType.R15 then
-			return lm:FindFirstChild('UpperTorso'), lm:FindFirstChild('LeftFoot'), lm:FindFirstChild('RightFoot')
+			return lm:FindFirstChild('UpperTorso'), lm:FindFirstChild('vr_leftfoot'), lm:FindFirstChild('vr_rightfoot')
 		else
 			return nil, nil, nil
 		end
@@ -119,11 +125,14 @@ function module:ApplyFBTCalibration(trackers)
 	-- make new welds
 	local torso, leftfoot, rightfoot = getlmcp(newdummy)
 	if not torso or not leftfoot or not rightfoot then failfbt() return end
+	local torsoTracker = nil
+	local leftFootTracker = nil
+	local rightFootTracker = nil
 	if #trackers <= 0 then
 		failfbt()
 	elseif #trackers == 1 then
 		-- Align only the torso
-		local torsoTracker = findclosesttracker(torso, trackers)
+		torsoTracker = findclosesttracker(torso, trackers)
 		if torsoTracker then
 			torsoTracker:WaitForChild('CalibratedTo').Value = torso
 			weldtrackertoart(torsoTracker, torso)
@@ -131,13 +140,13 @@ function module:ApplyFBTCalibration(trackers)
 		end
 	elseif #trackers == 2 then
 		-- Align LeftFoot and RightFoot
-		local leftFootTracker = findclosesttracker(leftfoot, trackers)
+		leftFootTracker = findclosesttracker(leftfoot, trackers)
 		if leftFootTracker then
 			leftFootTracker:WaitForChild('CalibratedTo').Value = leftfoot
 			weldtrackertoart(leftFootTracker, leftfoot)
 			leftfoot.Anchored = false
 		end
-		local rightFootTracker = findclosesttracker(rightfoot, trackers)
+		rightFootTracker = findclosesttracker(rightfoot, trackers)
 		if rightFootTracker then
 			rightFootTracker:WaitForChild('CalibratedTo').Value = rightfoot
 			weldtrackertoart(rightFootTracker, rightfoot)
@@ -145,19 +154,19 @@ function module:ApplyFBTCalibration(trackers)
 		end
 	elseif #trackers == 3 then
 		-- Align Torso, LeftFoot, and RightFoot
-		local torsoTracker = findclosesttracker(torso, trackers)
+		torsoTracker = findclosesttracker(torso, trackers)
 		if torsoTracker then
 			torsoTracker:WaitForChild('CalibratedTo').Value = torso
 			weldtrackertoart(torsoTracker, torso)
 			torso.Anchored = false
 		end
-		local leftFootTracker = findclosesttracker(leftfoot, trackers)
+		leftFootTracker = findclosesttracker(leftfoot, trackers)
 		if leftFootTracker then
 			leftFootTracker:WaitForChild('CalibratedTo').Value = leftfoot
 			weldtrackertoart(leftFootTracker, leftfoot)
 			leftfoot.Anchored = false
 		end
-		local rightFootTracker = findclosesttracker(rightfoot, trackers)
+		rightFootTracker = findclosesttracker(rightfoot, trackers)
 		if rightFootTracker then
 			rightFootTracker:WaitForChild('CalibratedTo').Value = rightfoot
 			weldtrackertoart(rightFootTracker, rightfoot)
@@ -223,6 +232,37 @@ function module:AlignTrackersInWorld(trackerdata, animspeed)
 				end
 			end
 			AnimationTool:AnimatePart(tracker, cframe, animspeed)
+		end
+	end
+end
+
+function module:GetTrackerByTrackerBodyPart(trackerBodyPart)
+	if RunService:IsServer() then
+		warn("Cannot GetTrackerByTrackerBodyPart on Server!")
+		return
+	end
+	local playercache = Config:GetOrCreatePlayerCache(Players.LocalPlayer) 
+	if not playercache then return end
+	local folder = playercache:FindFirstChild('ExtendedTracking'):FindFirstChild('Trackers')
+	if not folder then return end
+	for _, tracker in folder:GetChildren() do
+		local trackerAttachment = tracker:WaitForChild('CalibratedTo').Value
+		if trackerAttachment then
+			if trackerBodyPart == module.TrackerBodyPart.Torso then
+				if trackerAttachment.Name == "UpperTorso" or trackerAttachment.Name == "Torso" then
+					return tracker
+				end
+			elseif trackerBodyPart == module.TrackerBodyPart.LeftFoot then
+				if trackerAttachment.Name == "LeftFoot" or trackerAttachment.Name == "Left Leg" then
+					return tracker
+				end
+			elseif trackerBodyPart == module.TrackerBodyPart.RightFoot then
+				if trackerAttachment.Name == "RightFoot" or trackerAttachment.Name == "Right Leg" then
+					return tracker
+				end
+			end
+		else
+			return
 		end
 	end
 end

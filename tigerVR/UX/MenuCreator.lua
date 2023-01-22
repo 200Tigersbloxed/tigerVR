@@ -19,11 +19,7 @@ function module:CreateMenu()
 		local newMenu = tigerVR.InstanceCache:FindFirstChild('tvrwindow'):Clone()
 		newMenu.Parent = model
 		local arm
-		if rigtype == Enum.HumanoidRigType.R6 then
-			arm = model:WaitForChild('Left Arm')
-		elseif rigtype == Enum.HumanoidRigType.R15 then
-			arm = model:WaitForChild('LeftHand')
-		end
+		arm = model:WaitForChild('vr_lefthand')
 		if arm then
 			local rc = arm:FindFirstChild('ChatWindowConstraint')
 			if rc then

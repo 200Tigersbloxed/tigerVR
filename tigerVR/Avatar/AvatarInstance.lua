@@ -147,7 +147,9 @@ function module:CreateVRAvatar(player, ignoreWelds, applyIK)
 	for _, part in newdummy:GetChildren() do
 		if part:IsA('BasePart') or part:IsA('MeshPart') then
 			--part.Transparency = 1
-			if not AvatarIK:IsIKJoint(part.Name) then
+			if rigtype == Enum.HumanoidRigType.R15 and not AvatarIK:IsIKJoint(part.Name) then
+				part.Anchored = true
+			elseif rigtype == Enum.HumanoidRigType.R6 then
 				part.Anchored = true
 			end
 		end

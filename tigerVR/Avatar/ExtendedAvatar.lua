@@ -72,7 +72,7 @@ local function getlmcp(lm)
 	local humanoid = lm:FindFirstChild('Humanoid')
 	if humanoid then
 		if humanoid.RigType == Enum.HumanoidRigType.R6 then
-			return lm:FindFirstChild('Torso'), lm:FindFirstChild('vr_leftfoot'), lm:FindFirstChild('vr_rightfoot')
+			return lm:FindFirstChild('Torso'), lm:FindFirstChild('Left Leg'), lm:FindFirstChild('Right Leg')
 		elseif humanoid.RigType == Enum.HumanoidRigType.R15 then
 			return lm:FindFirstChild('UpperTorso'), lm:FindFirstChild('vr_leftfoot'), lm:FindFirstChild('vr_rightfoot')
 		else

@@ -34,8 +34,10 @@ local function startclient()
 	local config = getconfig()
 	if config['IsVR'] or config['Debug'] then
 		tigerVR.Remotes.InitVR:FireServer()
-		Players.LocalPlayer.CameraMinZoomDistance = 0
-		Players.LocalPlayer.CameraMaxZoomDistance = 0
+		if not config['Debug'] then
+			Players.LocalPlayer.CameraMinZoomDistance = 0
+			Players.LocalPlayer.CameraMaxZoomDistance = 0
+		end
 	end
 end
 

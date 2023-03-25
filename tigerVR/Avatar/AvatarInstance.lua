@@ -143,7 +143,11 @@ function module:CreateVRAvatar(player, ignoreWelds, applyIK)
 			end
 		end
 	end
-	newdummy:PivotTo(character.PrimaryPart:GetPivot())
+	local pcf = character.PrimaryPart:GetPivot()
+	if rigtype == Enum.HumanoidRigType.R6 then
+		pcf = CFrame.new(pcf.X, pcf.Y - 1.5, pcf.Z)
+	end
+	newdummy:PivotTo(pcf)
 	for _, part in newdummy:GetChildren() do
 		if part:IsA('BasePart') or part:IsA('MeshPart') then
 			--part.Transparency = 1
